@@ -20,9 +20,9 @@ The goal was to work through differents parts of applied cryptography: hybrid en
 ## Structure
 
 ```
-index.html   → markup only
+index.html  → markup only
 style.css   → all styling
-script.js       → all logic 
+script.js   → all logic 
 ```
 
 ## Stack

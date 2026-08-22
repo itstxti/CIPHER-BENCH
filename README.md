@@ -27,9 +27,9 @@ script.js   → all logic
 
 ## Stack
 
-- Web Crypto API 
-- hash-wasm for Argon2id (WASM, client-side)
-- Vanilla JavaScript
+• Web Crypto API 
+• hash-wasm for Argon2id (WASM, client-side)
+• Vanilla JavaScript
 
 ## How to use
 
@@ -80,9 +80,9 @@ This uses a *different* key pair than encryption, one built for signing, not enc
 
 ## Known limitations
 
-- **No persistence.** Closing the tab discards all state, including generated key pairs. There is no key-storage feature, since that would introduce a storage mechanism to secure, which is outside the scope of a stateless tool.
-- **Replay protection is session-only.** It detects replays within the same browser tab and nothing beyond that.
-- **Files are capped at 500 MB**, since they are buffered fully in memory rather than streamed.
+• **No persistence.** Closing the tab discards all state, including generated key pairs. There is no key-storage feature, since that would introduce a storage mechanism to secure, which is outside the scope of a stateless tool.
+• **Replay protection is session-only.** It detects replays within the same browser tab and nothing beyond that.
+• **Files are capped at 500 MB**, since they are buffered fully in memory rather than streamed.
 
 ## License
 

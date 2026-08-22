@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIPHERBENCH — Client-Side Crypto Toolkit</title>
+<script src="https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/index.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="dot"></span> WEB CRYPTO API · RUNS ENTIRELY IN YOUR BROWSER</div>
+    <h1 class="hero-title">CIPHER<span class="amp">/</span>BENCH</h1>
+    <p class="hero-sub">Encrypt text and files, generate key pairs for asymmetric encryption, verify integrity with hashing.</p>
+    <div class="cipher-strip">
+      <span class="label">LIVE</span>
+      <span id="cipherText"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="text">Text</button>
+    <button class="tab" data-tab="file">File</button>
+    <button class="tab" data-tab="asym">Keys</button>
+    <button class="tab" data-tab="hash">Hash</button>
+  </div>
+
+  <!-- ===================== TEXT PANEL ===================== -->
+  <section class="panel" id="panel-text">
+    <span class="bl"></span><span class="br"></span>
+    <div class="panel-header">
+      <div class="panel-title"><span class="n">01</span>TEXT CIPHER</div>
+      <div class="status-light" id="textStatus"><span class="led"></span>IDLE</div>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" data-mode="encrypt" data-group="text">Encrypt</button>
+      <button class="mode-btn" data-mode="decrypt" data-group="text">Decrypt</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="textPassword">Password</label>
+        <div class="pw-row">
+          <input type="password" id="textPassword" placeholder="Enter a strong password" autocomplete="off">
+          <button class="icon-btn" id="textPwToggle">SHOW</button>
+        </div>
+        <div class="strength" id="textStrength"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="field" id="textKdfField">
+        <label for="textKdf">Key derivation</label>
+        <select id="textKdf">
+          <option value="1" selected>Argon2id (recommended)</option>
+          <option value="0">PBKDF2-SHA256 (faster)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="textInputLabel" for="textInput">Plaintext</label>
+      <textarea id="textInput" placeholder="Type or paste text here..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="textRun">Run cipher</button>
+      <button class="btn btn-ghost" id="textClear">Clear</button>
+    </div>
+
+    <div class="msg" id="textMsg"></div>
+
+    <div class="output-wrap" id="textOutputWrap" style="display:none">
+      <label id="textOutputLabel" for="textOutput">Ciphertext</label>
+      <textarea id="textOutput" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="textCopy">Copy to clipboard</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FILE PANEL ===================== -->
+  <section class="panel" id="panel-file" style="display:none">
+    <span class="bl"></span><span class="br"></span>
+    <div class="panel-header">
+      <div class="panel-title"><span class="n">02</span>FILE CIPHER</div>
+      <div class="status-light" id="fileStatus"><span class="led"></span>IDLE</div>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" data-mode="encrypt" data-group="file">Encrypt</button>
+      <button class="mode-btn" data-mode="decrypt" data-group="file">Decrypt</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="filePassword">Password</label>
+        <div class="pw-row">
+          <input type="password" id="filePassword" placeholder="Enter a strong password" autocomplete="off">
+          <button class="icon-btn" id="filePwToggle">SHOW</button>
+        </div>
+      </div>
+      <div class="field" id="fileKdfField">
+        <label for="fileKdf">Key derivation</label>
+        <select id="fileKdf">
+          <option value="1" selected>Argon2id (recommended)</option>
+          <option value="0">PBKDF2-SHA256 (faster)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Source file</label>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput">
+        <div id="dropzoneText">Drop a file here, or click to browse</div>
+      </div>
+      <div class="file-info" id="fileInfo"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="fileRun" disabled>Run cipher</button>
+      <button class="btn btn-ghost" id="fileClear">Clear</button>
+    </div>
+
+    <div class="msg" id="fileMsg"></div>
+  </section>
+
+  <!-- ===================== ASYMMETRIC PANEL ===================== -->
+  <section class="panel" id="panel-asym" style="display:none">
+    <span class="bl"></span><span class="br"></span>
+    <div class="panel-header">
+      <div class="panel-title"><span class="n">03</span>ASYMMETRIC KEYS</div>
+      <div class="status-light" id="asymStatus"><span class="led"></span>IDLE</div>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" data-mode="generate" data-group="asym">Generate pair</button>
+      <button class="mode-btn" data-mode="encrypt" data-group="asym">Encrypt to recipient</button>
+      <button class="mode-btn" data-mode="decrypt" data-group="asym">Decrypt with my key</button>
+      <button class="mode-btn" data-mode="sign" data-group="asym">Sign message</button>
+      <button class="mode-btn" data-mode="verify" data-group="asym">Verify signature</button>
+    </div>
+
+    <!-- GENERATE -->
+    <div id="asymGenerate">
+      <div class="panel-note">
+        <b>Encryption keys</b> — RSA-OAEP encrypts a random AES key to the recipient's public key, then AES-GCM encrypts the actual data. ECDH derives a one-time shared AES key per message via an ephemeral key pair (forward secrecy per message). <b>Signing keys</b> — RSA-PSS / ECDSA prove a message came from the holder of the private key and wasn't altered. A key pair generated for one purpose can't be used for the other — pick before you generate.
+      </div>
+      <div class="field">
+        <label for="asymAlgoGen">Algorithm</label>
+        <select id="asymAlgoGen">
+          <optgroup label="Encryption">
+            <option value="0">RSA-OAEP 2048-bit</option>
+            <option value="1">RSA-OAEP 4096-bit</option>
+            <option value="2" selected>ECDH P-256</option>
+            <option value="3">ECDH P-384</option>
+          </optgroup>
+          <optgroup label="Signing">
+            <option value="4">RSA-PSS 2048-bit</option>
+            <option value="5">RSA-PSS 4096-bit</option>
+            <option value="6">ECDSA P-256</option>
+            <option value="7">ECDSA P-384</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="genRun">Generate key pair</button>
+      </div>
+      <div class="msg" id="genMsg"></div>
+      <div class="keypair-grid" id="keypairGrid" style="display:none">
+        <div class="key-card pub">
+          <label>Public key <span class="tag">SHARE THIS</span></label>
+          <textarea class="keyblock" id="genPubOut" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="genPubCopy">Copy</button>
+            <button class="btn btn-ghost" id="genPubDl">Download</button>
+          </div>
+        </div>
+        <div class="key-card priv">
+          <label>Private key <span class="tag">KEEP SECRET</span></label>
+          <textarea class="keyblock" id="genPrivOut" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="genPrivCopy">Copy</button>
+            <button class="btn btn-ghost" id="genPrivDl">Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCRYPT TO RECIPIENT -->
+    <div id="asymEncrypt" style="display:none">
+      <div class="field">
+        <label for="asymRecipientKey">Recipient's public key (PEM)</label>
+        <textarea class="keyblock" id="asymRecipientKey" placeholder="-----BEGIN PUBLIC KEY-----..."></textarea>
+      </div>
+      <div class="field">
+        <label for="asymPlainInput">Message</label>
+        <textarea class="small" id="asymPlainInput" placeholder="Type the message to encrypt..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="asymEncRun">Encrypt</button>
+        <button class="btn btn-ghost" id="asymEncClear">Clear</button>
+      </div>
+      <div class="msg" id="asymEncMsg"></div>
+      <div class="output-wrap" id="asymEncOutputWrap" style="display:none">
+        <label for="asymEncOutput">Ciphertext (base64) — send this to the key owner</label>
+        <textarea id="asymEncOutput" readonly></textarea>
+        <div class="btn-row"><button class="btn btn-ghost" id="asymEncCopy">Copy to clipboard</button></div>
+      </div>
+    </div>
+
+    <!-- DECRYPT WITH MY KEY -->
+    <div id="asymDecrypt" style="display:none">
+      <div class="field">
+        <label for="asymMyPrivateKey">Your private key (PEM)</label>
+        <textarea class="keyblock" id="asymMyPrivateKey" placeholder="-----BEGIN PRIVATE KEY-----..."></textarea>
+      </div>
+      <div class="field">
+        <label for="asymCipherInput">Ciphertext (base64)</label>
+        <textarea class="small" id="asymCipherInput" placeholder="Paste the received ciphertext..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="asymDecRun">Decrypt</button>
+        <button class="btn btn-ghost" id="asymDecClear">Clear</button>
+      </div>
+      <div class="msg" id="asymDecMsg"></div>
+      <div class="output-wrap" id="asymDecOutputWrap" style="display:none">
+        <label for="asymDecOutput">Plaintext</label>
+        <textarea id="asymDecOutput" readonly></textarea>
+      </div>
+    </div>
+
+    <!-- SIGN MESSAGE -->
+    <div id="asymSign" style="display:none">
+      <div class="panel-note">
+        Each signature is bound to a timestamp and a random nonce at signing time, so a captured signed package can later be flagged as stale or replayed — the verifier chooses what "stale" means via the freshness window on the Verify tab.
+      </div>
+      <div class="field">
+        <label for="asymSignPrivateKey">Your private key (PEM, signing type)</label>
+        <textarea class="keyblock" id="asymSignPrivateKey" placeholder="-----BEGIN PRIVATE KEY-----..."></textarea>
+      </div>
+      <div class="field">
+        <label for="asymSignMessage">Message to sign</label>
+        <textarea class="small" id="asymSignMessage" placeholder="Type the message..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="asymSignRun">Sign</button>
+        <button class="btn btn-ghost" id="asymSignClear">Clear</button>
+      </div>
+      <div class="msg" id="asymSignMsg"></div>
+      <div class="output-wrap" id="asymSignOutputWrap" style="display:none">
+        <label for="asymSignOutput">Signed package (base64) — message, timestamp, nonce, and signature bundled together</label>
+        <textarea id="asymSignOutput" readonly></textarea>
+        <div class="btn-row"><button class="btn btn-ghost" id="asymSignCopy">Copy to clipboard</button></div>
+      </div>
+    </div>
+
+    <!-- VERIFY SIGNATURE -->
+    <div id="asymVerify" style="display:none">
+      <div class="field">
+        <label for="asymVerifyPublicKey">Signer's public key (PEM)</label>
+        <textarea class="keyblock" id="asymVerifyPublicKey" placeholder="-----BEGIN PUBLIC KEY-----..."></textarea>
+      </div>
+      <div class="field">
+        <label for="asymVerifyPackage">Signed package (base64)</label>
+        <textarea class="small" id="asymVerifyPackage" placeholder="Paste the signed package produced by Sign..."></textarea>
+      </div>
+      <div class="field">
+        <label for="asymFreshnessWindow">Freshness window</label>
+        <select id="asymFreshnessWindow">
+          <option value="60000">1 minute</option>
+          <option value="300000" selected>5 minutes</option>
+          <option value="3600000">1 hour</option>
+          <option value="86400000">24 hours</option>
+          <option value="0">No limit (accept any timestamp)</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="asymVerifyRun">Verify</button>
+        <button class="btn btn-ghost" id="asymVerifyClear">Clear</button>
+      </div>
+      <div class="msg" id="asymVerifyMsg"></div>
+      <div class="output-wrap" id="asymVerifyResultWrap" style="display:none">
+        <label>Recovered message</label>
+        <textarea id="asymVerifyResultMsg" readonly></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HASH PANEL ===================== -->
+  <section class="panel" id="panel-hash" style="display:none">
+    <span class="bl"></span><span class="br"></span>
+    <div class="panel-header">
+      <div class="panel-title"><span class="n">04</span>INTEGRITY / HASH</div>
+      <div class="status-light" id="hashStatus"><span class="led"></span>IDLE</div>
+    </div>
+
+    <div class="field">
+      <label for="hashAlgo">Algorithm</label>
+      <select id="hashAlgo">
+        <option value="SHA-256">SHA-256</option>
+        <option value="SHA-384">SHA-384</option>
+        <option value="SHA-512">SHA-512</option>
+        <option value="SHA-1">SHA-1 (legacy — not for security)</option>
+      </select>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" data-mode="hash-text" data-group="hash">Text input</button>
+      <button class="mode-btn" data-mode="hash-file" data-group="hash">File input</button>
+    </div>
+
+    <div class="field" id="hashTextField">
+      <label for="hashInput">Input</label>
+      <textarea id="hashInput" placeholder="Type or paste text to hash..."></textarea>
+    </div>
+
+    <div class="field" id="hashFileField" style="display:none">
+      <label>Source file</label>
+      <div class="dropzone" id="hashDropzone">
+        <input type="file" id="hashFileInput">
+        <div id="hashDropzoneText">Drop a file here, or click to browse</div>
+      </div>
+      <div class="file-info" id="hashFileInfo"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="hashRun">Compute hash</button>
+      <button class="btn btn-ghost" id="hashClear">Clear</button>
+    </div>
+
+    <div class="hash-out" id="hashOutput">—</div>
+
+    <div class="field" style="margin-top:16px">
+      <label for="hashCompare">Compare against (optional)</label>
+      <input type="text" id="hashCompare" placeholder="Paste a hash to verify a match">
+    </div>
+    <div class="msg" id="hashMsg"></div>
+  </section>
+
+  <p class="footnote">
+    AES-256-GCM · Argon2id / PBKDF2-SHA256 · RSA-OAEP · ECDH · RSA-PSS · ECDSA · Web Crypto API<br>
+    Nothing typed here is transmitted, logged, or stored. Closing this tab discards everything — save private keys before you navigate away.
+  </p>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

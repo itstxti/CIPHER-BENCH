@@ -16,14 +16,6 @@ The goal was to work through different parts of applied cryptography: hybrid enc
 | Digital signatures | RSA-PSS & ECDSA, with timestamp + nonce replay protection |
 | Hashing | SHA-256/384/512, plus a compare field to verify against a known hash |
 
-## Structure
-
-```
-index.html  → markup only
-style.css   → all styling
-script.js   → all logic 
-```
-
 ## Stack
 
 — Web Crypto API<br>

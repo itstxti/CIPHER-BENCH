@@ -3,9 +3,6 @@ A client-side cryptography toolkit for symmetric encryption, asymmetric encrypti
 
 ![status](https://img.shields.io/badge/status-portfolio_project-blue) ![deps](https://img.shields.io/badge/dependencies-1_(CDN)-lightgrey) ![license](https://img.shields.io/badge/license-MIT-green)
 
-## Motivation
-The goal was to work through different parts of applied cryptography: hybrid encryption, key-derivation cost, replay protection. 
-
 ## Features
 
 | Module | What it does |
